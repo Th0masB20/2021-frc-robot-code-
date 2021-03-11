@@ -12,4 +12,17 @@ package frc.robot;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
-public final class Constants {}
+public final class Constants {
+
+    public static final int rPort1 = 0;
+    public static final int rPort2 = 1; 
+    public static final int lPort1 = 2;
+    public static final int lPort2 = 3;
+
+    public static final int rStickPort = 1;
+    public static final int lStickPort = 0;
+
+    public static final int yAxis = 1;
+
+
+}
