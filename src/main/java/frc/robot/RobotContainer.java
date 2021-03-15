@@ -4,12 +4,15 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.commands.DriveTrain;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.IntakePistonSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -21,18 +24,31 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem driveSub;
   private final DriveTrain driveCommand;
+  private final IntakePistonSubsystem intakePSubsystem;
+  private final IntakeCommand intake;
+  private final Compressor c;
 
   public static Joystick rightStick;
   public static Joystick leftStick;
+  public static XboxController xboxController;
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     driveSub = new DriveSubsystem();
     driveCommand = new DriveTrain(driveSub);
 
+    intakePSubsystem = new IntakePistonSubsystem();
+    intake = new IntakeCommand(intakePSubsystem);
+
     rightStick = new Joystick(Constants.rStickPort);
     leftStick = new Joystick(Constants.lStickPort);
+    xboxController = new XboxController(Constants.xboxPort);
 
     driveSub.setDefaultCommand(driveCommand);
+    intakePSubsystem.setDefaultCommand(intake);
+
+
+    c = new Compressor(0);
+    c.start();
     // Configure the button bindings
     configureButtonBindings();
   }

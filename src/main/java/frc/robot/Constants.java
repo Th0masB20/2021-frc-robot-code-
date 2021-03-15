@@ -21,8 +21,15 @@ public final class Constants {
 
     public static final int rStickPort = 1;
     public static final int lStickPort = 0;
+    public static final int xboxPort = 2;
 
     public static final int yAxis = 1;
+
+    public static final int solinoid1 = 0;
+    public static final int solinoid2 = 1;
+    public static final int solinoid3 = 2;
+    public static final int solinoid4 = 3;
+
 
 
 }

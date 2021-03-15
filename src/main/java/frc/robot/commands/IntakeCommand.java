@@ -5,18 +5,17 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Constants;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.IntakePistonSubsystem;
 
-public class DriveTrain extends CommandBase {
-  DriveSubsystem driveSub;
-  
-  /** Creates a new DriveTrain. */
-  public DriveTrain(DriveSubsystem drive) {
-    driveSub = drive;
+public class IntakeCommand extends CommandBase {
+  IntakePistonSubsystem intakePistons;
+
+  /** Creates a new IntakeCommand. */
+  public IntakeCommand(IntakePistonSubsystem intakeP) {
+    intakePistons = intakeP;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(driveSub);
+    addRequirements(intakePistons);
   }
 
   // Called when the command is initially scheduled.
@@ -26,14 +25,12 @@ public class DriveTrain extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    driveSub.drive(RobotContainer.rightStick.getRawAxis(Constants.yAxis), RobotContainer.leftStick.getRawAxis(Constants.yAxis));
+    intakePistons.IntakePistons(RobotContainer.xboxController.getAButtonPressed());
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {
-    driveSub.stop();
-  }
+  public void end(boolean interrupted) {}
 
   // Returns true when the command should end.
   @Override
