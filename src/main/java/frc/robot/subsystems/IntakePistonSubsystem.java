@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -16,6 +17,7 @@ public class IntakePistonSubsystem extends SubsystemBase {
   private int numPresses = 0;
   private long start = 0l;
   private boolean wait;
+  private boolean active;
 
 
   public IntakePistonSubsystem() {
@@ -28,21 +30,23 @@ public class IntakePistonSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-  public void IntakePistons(boolean activate) {
+  public void IntakePistons(XboxController x ) {
     wait = waitTime(start, 250);
-    if (wait && activate && numPresses == 0) {
+    active = x.getAButtonPressed();
+
+    if (wait && active && numPresses == 0) {
       s1.set(Value.kForward);
       s2.set(Value.kForward);
       numPresses++;
-      activate = false;
+      active = false;
 
       restartTime();        
     }
-    else if(wait && activate && numPresses == 1){
+    else if(wait && active && numPresses == 1){
       s1.set(Value.kReverse);
       s2.set(Value.kReverse);
       numPresses--;
-      activate = false;
+      active = false;
 
       restartTime();
     }

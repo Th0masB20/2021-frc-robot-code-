@@ -6,16 +6,19 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.IntakeMotorSubsystem;
 import frc.robot.subsystems.IntakePistonSubsystem;
 
 public class IntakeCommand extends CommandBase {
   IntakePistonSubsystem intakePistons;
+  IntakeMotorSubsystem intakeMotor;
 
   /** Creates a new IntakeCommand. */
-  public IntakeCommand(IntakePistonSubsystem intakeP) {
+  public IntakeCommand(IntakePistonSubsystem intakeP, IntakeMotorSubsystem intakeM) {
     intakePistons = intakeP;
+    intakeMotor = intakeM;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(intakePistons);
+    addRequirements(intakePistons, intakeMotor);
   }
 
   // Called when the command is initially scheduled.
@@ -25,7 +28,8 @@ public class IntakeCommand extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    intakePistons.IntakePistons(RobotContainer.xboxController.getAButtonPressed());
+    intakePistons.IntakePistons(RobotContainer.xboxController);
+    intakeMotor.moveIntake(RobotContainer.xboxController);
   }
 
   // Called once the command ends or is interrupted.

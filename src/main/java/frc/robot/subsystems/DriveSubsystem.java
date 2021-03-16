@@ -45,9 +45,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void stop(){
-      motorR1.set(0);
-      motorR2.set(0);
-      motorL1.set(0);
-      motorL2.set(0);
+      rightMotors.set(0);
+      leftMotors.set(0);    
   }
 }

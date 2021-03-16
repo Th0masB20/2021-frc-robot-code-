@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.commands.DriveTrain;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.IntakeMotorSubsystem;
 import frc.robot.subsystems.IntakePistonSubsystem;
 
 /**
@@ -23,9 +24,12 @@ import frc.robot.subsystems.IntakePistonSubsystem;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem driveSub;
-  private final DriveTrain driveCommand;
   private final IntakePistonSubsystem intakePSubsystem;
+  private final IntakeMotorSubsystem intakeMSubsystem;
+
+  private final DriveTrain driveCommand;
   private final IntakeCommand intake;
+
   private final Compressor c;
 
   public static Joystick rightStick;
@@ -33,22 +37,29 @@ public class RobotContainer {
   public static XboxController xboxController;
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    //subsystems
     driveSub = new DriveSubsystem();
-    driveCommand = new DriveTrain(driveSub);
-
     intakePSubsystem = new IntakePistonSubsystem();
-    intake = new IntakeCommand(intakePSubsystem);
+    intakeMSubsystem = new IntakeMotorSubsystem();
 
+    //commands
+    driveCommand = new DriveTrain(driveSub);
+    intake = new IntakeCommand(intakePSubsystem, intakeMSubsystem);
+
+    //joysticks and controller
     rightStick = new Joystick(Constants.rStickPort);
     leftStick = new Joystick(Constants.lStickPort);
     xboxController = new XboxController(Constants.xboxPort);
 
+    //default commands 
     driveSub.setDefaultCommand(driveCommand);
     intakePSubsystem.setDefaultCommand(intake);
+    intakeMSubsystem.setDefaultCommand(intake);
 
-
+    //compressor
     c = new Compressor(0);
     c.start();
+    
     // Configure the button bindings
     configureButtonBindings();
   }

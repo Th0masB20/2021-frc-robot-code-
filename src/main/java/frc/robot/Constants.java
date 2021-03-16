@@ -18,6 +18,7 @@ public final class Constants {
     public static final int rPort2 = 1; 
     public static final int lPort1 = 2;
     public static final int lPort2 = 3;
+    public static final int intakeP = 6;
 
     public static final int rStickPort = 1;
     public static final int lStickPort = 0;
@@ -30,6 +31,8 @@ public final class Constants {
     public static final int solinoid3 = 2;
     public static final int solinoid4 = 3;
 
+
+    public static final double intakeSpeed = 0.5;
 
 
 }
