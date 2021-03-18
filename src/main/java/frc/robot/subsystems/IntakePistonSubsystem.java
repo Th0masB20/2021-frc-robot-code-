@@ -22,7 +22,6 @@ public class IntakePistonSubsystem extends SubsystemBase {
 
   public IntakePistonSubsystem() {
     s1 = new DoubleSolenoid(Constants.solinoid1, Constants.solinoid2);
-    s2 = new DoubleSolenoid(Constants.solinoid3, Constants.solinoid4);
   }
 
   @Override
@@ -36,7 +35,6 @@ public class IntakePistonSubsystem extends SubsystemBase {
 
     if (wait && active && numPresses == 0) {
       s1.set(Value.kForward);
-      s2.set(Value.kForward);
       numPresses++;
       active = false;
 
@@ -44,7 +42,6 @@ public class IntakePistonSubsystem extends SubsystemBase {
     }
     else if(wait && active && numPresses == 1){
       s1.set(Value.kReverse);
-      s2.set(Value.kReverse);
       numPresses--;
       active = false;
 
