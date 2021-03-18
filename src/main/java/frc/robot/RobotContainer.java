@@ -34,8 +34,6 @@ public class RobotContainer {
   private final IntakeCommand intakeCommand;
   private final BeltCommand beltCommand;
 
-  private final Compressor c;
-
   public static Joystick rightStick;
   public static Joystick leftStick;
   public static XboxController xboxController;
@@ -64,9 +62,6 @@ public class RobotContainer {
     beltSubsystem.setDefaultCommand(beltCommand);
 
     //compressor
-    c = new Compressor(0);
-    c.start();
-    
     // Configure the button bindings
     configureButtonBindings();
   }

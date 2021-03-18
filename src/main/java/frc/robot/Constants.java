@@ -14,10 +14,10 @@ package frc.robot;
  */
 public final class Constants {
 
-    public static final int rPort1 = 3;
-    public static final int rPort2 = 2; 
-    public static final int lPort1 = 1;
-    public static final int lPort2 = 0;
+    public static final int rPort1 = 0;
+    public static final int rPort2 = 1; 
+    public static final int lPort1 = 2;
+    public static final int lPort2 = 3;
 
     public static final int intakeP = 7;
     public static final int beltPort = 6;
