@@ -30,4 +30,8 @@ public class IntakeMotorSubsystem extends SubsystemBase {
 
     intakeMotor.set((inSpeed - outSpeed) * Constants.intakeSpeed);
   }
+
+  public void stopIntake(){
+    intakeMotor.set(0);
+  }
 }
