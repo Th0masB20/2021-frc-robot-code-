@@ -35,7 +35,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void drive(double leftSpeed, double rightSpeed){
-    if((leftSpeed < 0.1f && leftSpeed > -0.2f) || (rightSpeed < 0.2f && rightSpeed > -0.2f))  
+    if((leftSpeed < 0.2f && leftSpeed > -0.2f) || (rightSpeed < 0.2f && rightSpeed > -0.2f))  
     {
       stop();
     }

@@ -25,9 +25,9 @@ public class BeltSubsystem extends SubsystemBase {
 
   public void moveBelt(XboxController x){
     speed = x.getY(Hand.kRight);
-    if(speed < -Constants.deadZone || speed > Constants.deadZone) {
-      beltMotor.set(speed);
-    }
+    if(speed > -Constants.deadZone && speed < Constants.deadZone) speed = 0;
+
+    beltMotor.set(speed);
   }
 
   public void stopBelt(){
