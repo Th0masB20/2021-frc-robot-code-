@@ -19,6 +19,7 @@ public final class Constants {
     public static final int lPort1 = 2;
     public static final int lPort2 = 3;
     public static final int intakeP = 6;
+    public static final int beltPort = 7;
 
     public static final int rStickPort = 1;
     public static final int lStickPort = 0;

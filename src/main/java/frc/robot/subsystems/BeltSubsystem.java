@@ -10,13 +10,12 @@ import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class IntakeMotorSubsystem extends SubsystemBase {
-  /** Creates a new IntakeMotorSubsystem. */
-  VictorSP intakeMotor;
-  double inSpeed, outSpeed;
-
-  public IntakeMotorSubsystem() {
-    intakeMotor = new VictorSP(Constants.intakeP);
+public class BeltSubsystem extends SubsystemBase {
+  VictorSP beltMotor;
+  double speed;
+  /** Creates a new BeltSubsystem. */
+  public BeltSubsystem() {
+    beltMotor = new VictorSP(Constants.beltPort);
   }
 
   @Override
@@ -24,10 +23,8 @@ public class IntakeMotorSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-  public void moveIntake(XboxController x){
-    inSpeed = x.getTriggerAxis(Hand.kRight);
-    outSpeed = x.getTriggerAxis(Hand.kLeft);
-
-    intakeMotor.set((inSpeed - outSpeed) * Constants.intakeSpeed);
+  public void moveBelt(XboxController x){
+    speed = x.getY(Hand.kRight);
+    beltMotor.set(speed);
   }
 }
