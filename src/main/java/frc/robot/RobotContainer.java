@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
@@ -37,6 +39,12 @@ public class RobotContainer {
   public static Joystick rightStick;
   public static Joystick leftStick;
   public static XboxController xboxController;
+
+  UsbCamera camera;
+
+
+  private final Compressor c;
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     //subsystems
@@ -62,6 +70,9 @@ public class RobotContainer {
     beltSubsystem.setDefaultCommand(beltCommand);
 
     //compressor
+    c = new Compressor(0);
+    c.start();
+
     // Configure the button bindings
     configureButtonBindings();
   }
