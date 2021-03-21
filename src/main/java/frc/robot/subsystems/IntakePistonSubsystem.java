@@ -13,7 +13,6 @@ import frc.robot.Constants;
 public class IntakePistonSubsystem extends SubsystemBase {
   /** Creates a new IntakePiston. */
   private DoubleSolenoid s1;
-  private DoubleSolenoid s2;
   private int numPresses = 0;
   private long start = 0l;
   private boolean wait;
