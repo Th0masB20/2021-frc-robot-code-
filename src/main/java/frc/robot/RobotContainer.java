@@ -4,11 +4,19 @@
 
 package frc.robot;
 
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.commands.BeltCommand;
+import frc.robot.commands.DriveTrain;
+import frc.robot.commands.IntakeCommand;
+import frc.robot.subsystems.BeltSubsystem;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.IntakeMotorSubsystem;
+import frc.robot.subsystems.IntakePistonSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -18,12 +26,51 @@ import edu.wpi.first.wpilibj2.command.Command;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private final DriveSubsystem driveSub;
+  private final IntakePistonSubsystem intakePSubsystem;
+  private final IntakeMotorSubsystem intakeMSubsystem;
+  private final BeltSubsystem beltSubsystem;
 
-  private final ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
+  private final DriveTrain driveCommand;
+  private final IntakeCommand intakeCommand;
+  private final BeltCommand beltCommand;
+
+  public static Joystick rightStick;
+  public static Joystick leftStick;
+  public static XboxController xboxController;
+
+  UsbCamera camera;
+
+  private final Compressor c;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    //subsystems
+    driveSub = new DriveSubsystem();
+    intakePSubsystem = new IntakePistonSubsystem();
+    intakeMSubsystem = new IntakeMotorSubsystem();
+    beltSubsystem = new BeltSubsystem();
+
+    //commands
+    driveCommand = new DriveTrain(driveSub);
+    intakeCommand = new IntakeCommand(intakePSubsystem, intakeMSubsystem);
+    beltCommand = new BeltCommand(beltSubsystem);
+
+    //joysticks and controller
+    rightStick = new Joystick(Constants.rStickPort);
+    leftStick = new Joystick(Constants.lStickPort);
+    xboxController = new XboxController(Constants.xboxPort);
+
+    //default commands 
+    driveSub.setDefaultCommand(driveCommand);
+    intakePSubsystem.setDefaultCommand(intakeCommand);
+    intakeMSubsystem.setDefaultCommand(intakeCommand);
+    beltSubsystem.setDefaultCommand(beltCommand);
+
+    //compressor
+    c = new Compressor(0);
+    c.start();
+
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -43,6 +90,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return m_autoCommand;
+    return null;
   }
 }
