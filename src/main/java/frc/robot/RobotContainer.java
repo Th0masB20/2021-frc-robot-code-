@@ -42,7 +42,6 @@ public class RobotContainer {
 
   UsbCamera camera;
 
-
   private final Compressor c;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
