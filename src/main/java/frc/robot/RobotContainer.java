@@ -53,6 +53,7 @@ public class RobotContainer {
      //camera
      camera = CameraServer.getInstance().startAutomaticCapture();
      //camera.setResolution(Constants.width, Constants.height);
+     
 
     //subsystems
     driveSub = new DriveSubsystem();
@@ -82,8 +83,6 @@ public class RobotContainer {
     //compressor
     c = new Compressor(0);
     c.start();
-
-
     // Configure the button bindings
     configureButtonBindings();
   }

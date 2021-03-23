@@ -26,15 +26,18 @@ public class AutonomusVision extends SubsystemBase {
   public AutonomusVision(UsbCamera camera) {
     gripTable = NetworkTableInstance.getDefault().getTable("GRIP/myContoursReport");
     
-    thread = new VisionThread(camera, new Vision(), (pipeline) -> {
+    thread = new VisionThread(camera, new Vision(), pipeline -> {
+      SmartDashboard.putNumber("centerX", (double) gripTable.getEntry("centerX").getNumber(centerX));
+
        if(!pipeline.findContoursOutput().isEmpty()){
         Rect r = Imgproc.boundingRect(pipeline.findContoursOutput().get(0));
         synchronized(imgLock){
-          centerX = r.x + r.width/2;
+          //centerX = r.x + r.width/2;
         }
        }
      });
-  thread.start();
+
+     thread.start();
   }
 
   @Override
@@ -44,5 +47,9 @@ public class AutonomusVision extends SubsystemBase {
   
   public void printStuff(){
 
+  }
+
+  public void start(){
+    thread.start();
   }
 }
