@@ -35,5 +35,7 @@ public final class Constants {
 
     public static final double deadZone = 0.1;
 
+    public static final int width = 320;
+    public static final int height = 240;
 
 }
