@@ -19,37 +19,85 @@ public class AutonomusVision extends SubsystemBase {
   /** Creates a new AutonomusVision. */
   VisionThread thread;
   NetworkTable gripTable;
+  int desplacement;
 
-  double centerX = 0;
   private final Object imgLock = new Object();
+  int centerX1, centerX2, centerX3;
+
+  double [] getValues = new double [0];
+  int [] position = new int [3];
+
+  int length;
 
   public AutonomusVision(UsbCamera camera) {
     gripTable = NetworkTableInstance.getDefault().getTable("GRIP/myContoursReport");
+
     
     thread = new VisionThread(camera, new Vision(), pipeline -> {
-      SmartDashboard.putNumber("centerX", (double) gripTable.getEntry("centerX").getNumber(centerX));
+    });
 
-       if(!pipeline.findContoursOutput().isEmpty()){
-        Rect r = Imgproc.boundingRect(pipeline.findContoursOutput().get(0));
-        synchronized(imgLock){
-          //centerX = r.x + r.width/2;
-        }
-       }
-     });
-
-     thread.start();
+    //thread.start();
+    int path = getPath();
   }
+  
+  public void printStuff(){
+    updateCenterPosition();
+
+      if(getPath() == 1)SmartDashboard.putString("Path", "red");
+      else if(getPath() == 0)SmartDashboard.putString("Path", "blue");
+      else SmartDashboard.putString("Path", "none");
+
+
+      SmartDashboard.putNumber("X1", centerX1);
+      SmartDashboard.putNumber("X2", centerX2);
+      SmartDashboard.putNumber("X3", centerX3);
+  }
+  
+  public void updateCenterPosition(){
+    length = gripTable.getEntry("centerX").getDoubleArray(getValues).length;
+    if(length > 3){
+      length = 3;
+    }
+
+    for(int i = length - 1; i >= 0; i--){
+      position[i] = (int)gripTable.getEntry("centerX").getDoubleArray(getValues)[i];
+    }
+    if(length == 2){
+      position[2] = 0;
+    }
+
+    if(length == 1){
+      position[2] = 0;
+      position[1] = 0;
+    }
+    
+    centerX1 = position[0];
+    centerX2 = position[1];
+    centerX3 = position[2];
+  }
+
+  int area1, area2;
+
+  public int getPath(){
+    if(centerX1 != -1 && centerX2 != -1){
+      //ball 2 to the right of first ball
+      if(centerX2 > centerX1){
+        return 1;
+      }
+      else {
+        return 0;
+      }
+    }
+    return -1;
+  }
+
+  public void doPath(){
+    //if(centerX3)
+  }
+
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-  }
-  
-  public void printStuff(){
-
-  }
-
-  public void start(){
-    thread.start();
   }
 }

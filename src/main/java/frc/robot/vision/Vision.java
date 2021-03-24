@@ -15,6 +15,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.*;
 import org.opencv.objdetect.*;
 
+import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.vision.VisionPipeline;
 
 /**
@@ -25,7 +26,6 @@ import edu.wpi.first.vision.VisionPipeline;
 * @author GRIP
 */
 public class Vision implements VisionPipeline {
-
 	//Outputs
 	private Mat hslThresholdOutput = new Mat();
 	private Mat cvErodeOutput = new Mat();

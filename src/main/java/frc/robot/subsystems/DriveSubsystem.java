@@ -44,6 +44,16 @@ public class DriveSubsystem extends SubsystemBase {
       leftMotors.set(leftSpeed * 0.75);
   }
 
+  public void rotateLeft(double speed){
+    rightMotors.set(-speed * 0.75);
+    leftMotors.set(-speed * 0.75);
+  }
+
+  public void rotateRight(double speed){
+    leftMotors.set(speed * 0.75);
+    rightMotors.set(speed * 0.75);
+  }
+
   public void stop(){
       rightMotors.set(0);
       leftMotors.set(0);    
