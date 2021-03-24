@@ -8,11 +8,13 @@ import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionThread;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.vision.Vision;
 
 public class AutonomusVision extends SubsystemBase {
@@ -23,25 +25,30 @@ public class AutonomusVision extends SubsystemBase {
 
   private final Object imgLock = new Object();
   int centerX1, centerX2, centerX3;
+  int cameraPosition1;
+  int path;
 
   double [] getValues = new double [0];
-  int [] position = new int [3];
+  int [] xPosition = new int [3];
 
   int length;
 
-  public AutonomusVision(UsbCamera camera) {
-    gripTable = NetworkTableInstance.getDefault().getTable("GRIP/myContoursReport");
+  DriveSubsystem drive;
 
+  public AutonomusVision(UsbCamera camera, DriveSubsystem d) {
+    gripTable = NetworkTableInstance.getDefault().getTable("GRIP/myContoursReport");
+    drive = d;
     
     thread = new VisionThread(camera, new Vision(), pipeline -> {
+      updateCenterPosition();
+      doPath();
     });
 
-    //thread.start();
-    int path = getPath();
+    thread.start();
+    path = getPath();
   }
   
   public void printStuff(){
-    updateCenterPosition();
 
       if(getPath() == 1)SmartDashboard.putString("Path", "red");
       else if(getPath() == 0)SmartDashboard.putString("Path", "blue");
@@ -60,23 +67,22 @@ public class AutonomusVision extends SubsystemBase {
     }
 
     for(int i = length - 1; i >= 0; i--){
-      position[i] = (int)gripTable.getEntry("centerX").getDoubleArray(getValues)[i];
+      xPosition[i] = (int)gripTable.getEntry("centerX").getDoubleArray(getValues)[i];
     }
     if(length == 2){
-      position[2] = 0;
+      xPosition[2] = 0;
     }
 
     if(length == 1){
-      position[2] = 0;
-      position[1] = 0;
+      xPosition[2] = 0;
+      xPosition[1] = 0;
     }
     
-    centerX1 = position[0];
-    centerX2 = position[1];
-    centerX3 = position[2];
-  }
+    centerX1 = xPosition[0];
+    centerX2 = xPosition[1];
+    centerX3 = xPosition[2];
 
-  int area1, area2;
+  }
 
   public int getPath(){
     if(centerX1 != -1 && centerX2 != -1){
@@ -92,8 +98,23 @@ public class AutonomusVision extends SubsystemBase {
   }
 
   public void doPath(){
-    //if(centerX3)
-  }
+    if(gripTable.getEntry("centerX").getDoubleArray(getValues).length != 0){
+        cameraPosition1 = centerX1 - Constants.width/2;
+        //drive.rotate(cameraPosition1 * 2/Constants.width);
+        SmartDashboard.putNumber("Rotation speed", cameraPosition1 * 2/Constants.width);
+      }
+      else{
+        System.out.println("hi");
+      }
+    }
+    /*
+    if(centerX2 == 0){
+      if(path == 1 && centerX1 == 0){
+        drive.rotateRight(0.5f);
+      }
+    }
+    */
+
 
 
   @Override
