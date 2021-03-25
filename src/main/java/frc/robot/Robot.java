@@ -51,12 +51,16 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    robotContainer.getAutonomusSubsystem().updatePath();
+    robotContainer.getAutonomusSubsystem().updateCenterXYPosition();
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
     autonomousCommand = robotContainer.getAutonomousCommand();
+   // if(robotContainer.commandsRunning()) robotContainer.stopTeleopCommands();
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
@@ -77,6 +81,8 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
+
+    //if(!robotContainer.commandsRunning())  robotContainer.scheduelTeleopCommands();
   }
 
   /** This function is called periodically during operator control. */

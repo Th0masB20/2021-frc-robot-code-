@@ -4,26 +4,33 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.AutonomusVision;
+import frc.robot.subsystems.AutonomousVisionSubsystem;
+import frc.robot.subsystems.BeltSubsystem;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.IntakeMotorSubsystem;
+import frc.robot.subsystems.IntakePistonSubsystem;
 
-public class AutonomusCommand extends CommandBase {
+public class AutonomousCommand extends CommandBase {
   /** Creates a new AutonomusCommand. */
-  AutonomusVision vision;
-  public AutonomusCommand(AutonomusVision v) {
-    // Use addRequirements() here to declare subsystem dependencies.
+  AutonomousVisionSubsystem vision;
+  public AutonomousCommand(AutonomousVisionSubsystem v,DriveSubsystem drive, BeltSubsystem belt, IntakeMotorSubsystem intakeMotor, IntakePistonSubsystem intakePiston) {
     vision = v;
-    addRequirements(vision);
+    // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(vision, drive, belt, intakeMotor, intakePiston);
+    
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     vision.printStuff();
+    vision.run();
   }
 
   // Called once the command ends or is interrupted.

@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.VictorSP;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -44,6 +45,7 @@ public class DriveSubsystem extends SubsystemBase {
       leftMotors.set(leftSpeed * 0.75);
   }
 
+
   public void rotateLeft(double speed){
     rightMotors.set(-speed * 0.75);
     leftMotors.set(-speed * 0.75);
@@ -54,13 +56,19 @@ public class DriveSubsystem extends SubsystemBase {
     rightMotors.set(speed * 0.75);
   }
 
+  //normal overall rotation
   public void rotate(double speed){
-    leftMotors.set(speed * 0.25);
-    rightMotors.set(speed * 0.25);
+    leftMotors.set(speed * 0.75);
+    rightMotors.set(speed * 0.75);
   }
 
   public void stop(){
       rightMotors.set(0);
       leftMotors.set(0);    
+  }
+
+  public void printSpeed(){
+    SmartDashboard.putNumber("Rotation speed left", (leftMotors.get()));
+    SmartDashboard.putNumber("Rotation speed right", (rightMotors.get()));
   }
 }

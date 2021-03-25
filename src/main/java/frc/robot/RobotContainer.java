@@ -11,11 +11,12 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.commands.AutonomusCommand;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.commands.AutonomousCommand;
 import frc.robot.commands.BeltCommand;
 import frc.robot.commands.DriveTrain;
 import frc.robot.commands.IntakeCommand;
-import frc.robot.subsystems.AutonomusVision;
+import frc.robot.subsystems.AutonomousVisionSubsystem;
 import frc.robot.subsystems.BeltSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.IntakeMotorSubsystem;
@@ -33,12 +34,12 @@ public class RobotContainer {
   private final IntakePistonSubsystem intakePSubsystem;
   private final IntakeMotorSubsystem intakeMSubsystem;
   private final BeltSubsystem beltSubsystem;
-  private final AutonomusVision visionSub;
+  private final AutonomousVisionSubsystem visionSub;
 
   private final DriveTrain driveCommand;
   private final IntakeCommand intakeCommand;
   private final BeltCommand beltCommand;
-  private final AutonomusCommand autonomusVision;
+  private final AutonomousCommand autonomusVisionCommand;
 
   public static Joystick rightStick;
   public static Joystick leftStick;
@@ -52,7 +53,7 @@ public class RobotContainer {
   public RobotContainer() {
      //camera
      camera = CameraServer.getInstance().startAutomaticCapture();
-     camera.setResolution(Constants.width, Constants.height);
+     //camera.setResolution(Constants.width, Constants.height);
      
 
     //subsystems
@@ -60,25 +61,27 @@ public class RobotContainer {
     intakePSubsystem = new IntakePistonSubsystem();
     intakeMSubsystem = new IntakeMotorSubsystem();
     beltSubsystem = new BeltSubsystem();
-    visionSub = new AutonomusVision(camera, driveSub);
+    visionSub = new AutonomousVisionSubsystem(camera, driveSub);
 
     //commands
     driveCommand = new DriveTrain(driveSub);
     intakeCommand = new IntakeCommand(intakePSubsystem, intakeMSubsystem);
     beltCommand = new BeltCommand(beltSubsystem);
-    autonomusVision = new AutonomusCommand(visionSub);
+
+    //autonomus Command
+    autonomusVisionCommand = new AutonomousCommand(visionSub, driveSub, beltSubsystem, intakeMSubsystem, intakePSubsystem);
 
     //joysticks and controller
     rightStick = new Joystick(Constants.rStickPort);
     leftStick = new Joystick(Constants.lStickPort);
     xboxController = new XboxController(Constants.xboxPort);
 
-    //default commands 
+    //set default commands to subsystems
+    //normal teleop drive has drive command as default command 
     driveSub.setDefaultCommand(driveCommand);
     intakePSubsystem.setDefaultCommand(intakeCommand);
     intakeMSubsystem.setDefaultCommand(intakeCommand);
     beltSubsystem.setDefaultCommand(beltCommand);
-    visionSub.setDefaultCommand(autonomusVision);
 
     //compressor
     c = new Compressor(0);
@@ -102,6 +105,27 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return autonomusVision;
+    return autonomusVisionCommand;  
+  }
+
+  public AutonomousVisionSubsystem getAutonomusSubsystem(){
+    return visionSub;
+  }
+
+  public void stopTeleopCommands(){
+    intakeCommand.cancel();
+    beltCommand.cancel();
+  }
+
+  public void scheduelTeleopCommands(){
+    intakeCommand.schedule();
+    beltCommand.schedule();
+  }
+
+  public boolean commandsRunning(){
+    if(driveCommand.isScheduled() && intakeCommand.isScheduled() && beltCommand.isScheduled()){
+      return true;
+    }
+    return false;
   }
 }
