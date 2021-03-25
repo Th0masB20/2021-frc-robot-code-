@@ -12,6 +12,7 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionThread;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -38,15 +39,23 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
   int lengthX, lengthY;
 
   DriveSubsystem drive;
+  BeltSubsystem belt;
+  IntakeMotorSubsystem intake;
+  Timer t;
 
-  public AutonomousVisionSubsystem(UsbCamera camera, DriveSubsystem d) {
+
+  public AutonomousVisionSubsystem(UsbCamera camera, DriveSubsystem d, BeltSubsystem belt, IntakeMotorSubsystem intake) {
     gripTable = NetworkTableInstance.getDefault().getTable("GRIP/myContoursReport");
     drive = d;
+    this.belt = belt;
+    this.intake = intake;
+    t = new Timer();
 
     thread = new VisionThread(camera, new Vision(), pipeline -> {
+      run();
     });
 
-    //thread.start();
+    thread.start();
   }
   
   public void printStuff(){
@@ -59,7 +68,6 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
       SmartDashboard.putNumber("Y2", centerY2);
       SmartDashboard.putBoolean("has done rotation", hasDoneRotation);
 
-      drive.printSpeed();
 
       SmartDashboard.putNumber("Path after enable", path);
   }
@@ -102,6 +110,10 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
 
       centerY1 = initialYPosition[0];
       centerY2 = initialYPosition[1];
+
+      if(lengthY == 1){
+        xPosition[1] = -1;
+      }
     }
 
   }
@@ -123,18 +135,38 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
     }
     return -1;
   }
-
+  
+  boolean inCenter =false;
+  boolean start = false;
   public void runPath(){
-    if(gripTable.getEntry("centerX").getDoubleArray(getValues).length >= 1){
-        ballPosition = centerX1 - (600/2);
-        if((ballPosition * 2) / 600 > -0.15f && (ballPosition * 2) / 600 < 0.15f) 
-          drive.stop();
 
+    intake.moveIntake(1);
+    belt.moveBeltNormal(0.6);
+
+    if(gripTable.getEntry("centerX").getDoubleArray(getValues).length >= 1){
+        ballPosition = centerX1 - (Constants.width/2);
+        inCenter = ((ballPosition * 2) / Constants.width > -0.25f) && ((ballPosition * 2) / Constants.width < 0.25f);
+      if(inCenter && !start) {
+        t.reset();
+        t.start();
+        if(t.get() < Constants.waitTimer){
+          drive.stop();
+        }
+      }
         else    
-          drive.rotate((ballPosition * 2) / 600);
+          drive.rotate((ballPosition * 2) / Constants.width);
+      }
+      System.out.println("Center: " + inCenter);
+      System.out.println("length: " + lengthX);
+
+      System.out.println("Timer: " + t.get());
+
+
+      if(inCenter && lengthX > -1 && t.get() > Constants.waitTimer){
+        drive.drive(-0.5, -0.5);
       }
 
-      System.out.println(hasDoneRotation);
+      /*
       if(!hasDoneRotation){
         if(path == 1 && centerX1 == -1 && centerX2 == -1){
           drive.rotateRight(0.5f);
@@ -142,13 +174,12 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
             hasDoneRotation = true;
           }
         }
-      }
+      }*/
     }
 
 
     public void run(){
       updateCenterXYPosition();
-      runPath();
     }
 
   @Override

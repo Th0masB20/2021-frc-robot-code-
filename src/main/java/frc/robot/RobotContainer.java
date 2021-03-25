@@ -53,7 +53,8 @@ public class RobotContainer {
   public RobotContainer() {
      //camera
      camera = CameraServer.getInstance().startAutomaticCapture();
-     //camera.setResolution(Constants.width, Constants.height);
+     camera.setResolution(Constants.width, Constants.height);
+     camera.setFPS(30);
      
 
     //subsystems
@@ -61,7 +62,7 @@ public class RobotContainer {
     intakePSubsystem = new IntakePistonSubsystem();
     intakeMSubsystem = new IntakeMotorSubsystem();
     beltSubsystem = new BeltSubsystem();
-    visionSub = new AutonomousVisionSubsystem(camera, driveSub);
+    visionSub = new AutonomousVisionSubsystem(camera, driveSub, beltSubsystem, intakeMSubsystem);
 
     //commands
     driveCommand = new DriveTrain(driveSub);

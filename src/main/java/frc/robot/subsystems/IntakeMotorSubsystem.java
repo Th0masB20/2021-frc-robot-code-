@@ -31,6 +31,10 @@ public class IntakeMotorSubsystem extends SubsystemBase {
     intakeMotor.set((inSpeed - outSpeed) * Constants.intakeSpeed);
   }
 
+  public void moveIntake(double speed){
+    intakeMotor.set(speed);
+  }
+  
   public void stopIntake(){
     intakeMotor.set(0);
   }

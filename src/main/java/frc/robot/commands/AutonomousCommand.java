@@ -30,7 +30,7 @@ public class AutonomousCommand extends CommandBase {
   @Override
   public void execute() {
     vision.printStuff();
-    vision.run();
+    vision.runPath();
   }
 
   // Called once the command ends or is interrupted.

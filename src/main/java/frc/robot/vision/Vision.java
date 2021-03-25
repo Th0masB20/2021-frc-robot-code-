@@ -45,14 +45,14 @@ public class Vision implements VisionPipeline {
 		// Step Blur0:
 		Mat blurInput = source0;
 		BlurType blurType = BlurType.get("Gaussian Blur");
-		double blurRadius = 9.90990990990991;
+		double blurRadius = 2.532721400645928;
 		blur(blurInput, blurType, blurRadius, blurOutput);
 
 		// Step HSL_Threshold0:
 		Mat hslThresholdInput = blurOutput;
-		double[] hslThresholdHue = {17.163094863935676, 44.55953948298452};
+		double[] hslThresholdHue = {17.349420622976275, 42.96142248906026};
 		double[] hslThresholdSaturation = {71.0284807474405, 255.0};
-		double[] hslThresholdLuminance = {45.86330935251798, 195.25000592342053};
+		double[] hslThresholdLuminance = {45.86330935251798, 230.06229261284034};
 		hslThreshold(hslThresholdInput, hslThresholdHue, hslThresholdSaturation, hslThresholdLuminance, hslThresholdOutput);
 
 		// Step CV_erode0:
