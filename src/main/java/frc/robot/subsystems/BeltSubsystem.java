@@ -30,7 +30,7 @@ public class BeltSubsystem extends SubsystemBase {
     beltMotor.set(speed);
   }
 
-  public void moveBeltNormal(double speed){
+  public void moveBelt(double speed){
     beltMotor.set(speed);
   }
 

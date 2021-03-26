@@ -26,7 +26,7 @@ public class DriveTrain extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    driveSub.drive(RobotContainer.rightStick.getRawAxis(Constants.yAxis), RobotContainer.leftStick.getRawAxis(Constants.yAxis));
+    driveSub.driveWithSticks(RobotContainer.rightStick.getRawAxis(Constants.yAxis), RobotContainer.leftStick.getRawAxis(Constants.yAxis));
   }
 
   // Called once the command ends or is interrupted.

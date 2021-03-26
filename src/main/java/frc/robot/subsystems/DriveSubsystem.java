@@ -37,7 +37,8 @@ public class DriveSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-  public void drive(double leftSpeed, double rightSpeed){
+  //drive with joysticks
+  public void driveWithSticks(double leftSpeed, double rightSpeed){
     if((leftSpeed < 0.2f && leftSpeed > -0.2f) || (rightSpeed < 0.2f && rightSpeed > -0.2f))  
     {
       stop();
@@ -47,15 +48,10 @@ public class DriveSubsystem extends SubsystemBase {
       leftMotors.set(leftSpeed * 0.75);
   }
 
-
-  public void rotateLeft(double speed){
+  //drive with just a speed 
+  public void drive(double speed){
     rightMotors.set(-speed * 0.75);
-    leftMotors.set(-speed * 0.75);
-  }
-
-  public void rotateRight(double speed){
     leftMotors.set(speed * 0.75);
-    rightMotors.set(speed * 0.75);
   }
 
   //normal overall rotation
@@ -65,9 +61,32 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void stop(){
-      rightMotors.set(0);
-      leftMotors.set(0);    
+    rightMotors.set(0);
+    leftMotors.set(0); 
+  }
+  
+  public boolean stopForTime(long start, int time){
+      if(waitTime(start, time)){
+        rightMotors.set(0);
+        leftMotors.set(0); 
+      }   
+      return !waitTime(start, time);
   }
 
+  public boolean waitTime(long start, int timeMil){
+    if(System.currentTimeMillis() - start < timeMil){
+      SmartDashboard.putNumber("Timer: ", System.currentTimeMillis() - start);
+      return true;
+    }
+    return false;
+  }
+
+  public double getRMotorSpeed(){
+    return rightMotors.get();
+  }
+
+  public double getLMotorSpeed(){
+    return leftMotors.get();
+  }
   
 }

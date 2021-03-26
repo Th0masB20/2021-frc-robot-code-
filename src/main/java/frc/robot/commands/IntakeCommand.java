@@ -30,6 +30,7 @@ public class IntakeCommand extends CommandBase {
   public void execute() {
     intakePistons.IntakePistons(RobotContainer.xboxController);
     intakeMotor.moveIntake(RobotContainer.xboxController);
+
   }
 
   // Called once the command ends or is interrupted.

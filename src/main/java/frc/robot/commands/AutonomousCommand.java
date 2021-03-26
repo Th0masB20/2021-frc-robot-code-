@@ -31,6 +31,7 @@ public class AutonomousCommand extends CommandBase {
   public void execute() {
     vision.printStuff();
     vision.runPath();
+    vision.update();
   }
 
   // Called once the command ends or is interrupted.
