@@ -49,15 +49,15 @@ public class DriveSubsystem extends SubsystemBase {
 
   //drive with just a speed 
   public void drive(double speed){
-    rightMotors.set(-speed * 0.75);
-    leftMotors.set(speed * 0.75);
+    rightMotors.set(speed * 0.75);
+    leftMotors.set(-speed * 0.75);
   }
 
 
   //normal overall rotation
   public void rotate(double speed){
-    leftMotors.set(speed * 0.30);
-    rightMotors.set(speed * 0.30);
+      leftMotors.set(speed * 0.2);
+      rightMotors.set(speed * 0.2);
   }
 
 
@@ -93,4 +93,9 @@ public class DriveSubsystem extends SubsystemBase {
     return leftMotors.get();
   }
   
+  public void driveFor(double speed, long currentTime, int time){
+    if(waitTime(currentTime, time)){
+      drive(speed);
+    }
+  }
 }

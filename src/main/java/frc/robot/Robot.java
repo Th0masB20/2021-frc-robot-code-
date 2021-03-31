@@ -52,8 +52,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
-    robotContainer.getAutonomusSubsystem().updatePath();
     robotContainer.getAutonomusSubsystem().updateCenterXYPosition();
+    robotContainer.getAutonomusSubsystem().updatePath();
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */

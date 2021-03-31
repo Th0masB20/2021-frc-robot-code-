@@ -34,6 +34,7 @@ public final class Constants {
     public static final double intakeSpeed = 0.5;
 
     public static final double deadZone = 0.2;
+    public static final float rotationDeadZOne = 0.25f;
 
     public static final int width = 320;
     public static final int height = 240;

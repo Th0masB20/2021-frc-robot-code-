@@ -10,6 +10,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionThread;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.vision.Vision;
 
 public class AutonomousVisionSubsystem extends SubsystemBase {
@@ -28,6 +29,8 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
   //for updatePath();
   double count = 0;
   double pathValue = 0;
+  boolean startTimerRun = false;
+
 
   //for average ball length at the start
   int ballLength;
@@ -80,7 +83,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
       update();
     });
 
-    //thread.start();
+    thread.start();
   }
   
   public void printStuff()
@@ -132,13 +135,14 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
 
     // y values
     lengthY = gripTable.getEntry("centerY").getDoubleArray(getValues).length;
-    if(lengthY < 2){
       if(lengthY > 2){
         lengthY = 2;
       }
     
-      for(int i = lengthY - 1; i >= 0; i--){
-        initialYPosition[i] = (int)gripTable.getEntry("centerY").getDoubleArray(getValues)[i];
+      if(lengthY != 0){
+        for(int i = lengthY - 1; i >= 0; i--){
+          initialYPosition[i] = (int)gripTable.getEntry("centerY").getDoubleArray(getValues)[i];
+        }
       }
 
       centerY1 = initialYPosition[0];
@@ -147,15 +151,15 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
       if(lengthY == 1 && initialYPosition[1] != -2){
         initialYPosition[1] = -1;
       }
-    }
+    
 
      /**then process them to get their position relative to the center */
      if(gripTable.getEntry("centerX").getDoubleArray(getValues).length >= 1){
-      ballPosition = centerX1 - (600/2);
-      inCenter = ((ballPosition * 2) / 600 > -0.25f) && ((ballPosition * 2) / 600 < 0.25f);
+      ballPosition = centerX1 - (Constants.width/2);
+      inCenter = ((ballPosition * 2) / Constants.width > -Constants.rotationDeadZOne) && ((ballPosition * 2) / Constants.width < Constants.rotationDeadZOne);
 
       if(!inCenter){
-        drive.rotate((ballPosition * 2) / 600);
+        drive.rotate((ballPosition * 2) / Constants.width);
       }
     }
     else{  
@@ -163,7 +167,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
     }  
 
     /**then check if a ball was collected */
-    if((int)gripTable.getEntry("centerY").getDoubleArray(getValues).length != 0 && (int)gripTable.getEntry("centerY").getDoubleArray(getValues)[0] >= 430 
+    if((int)gripTable.getEntry("centerY").getDoubleArray(getValues).length != 0 && (int)gripTable.getEntry("centerY").getDoubleArray(getValues)[0] >= (Constants.height - 20) 
      && inCenter && !waitTime(startWaitUpdateTime, 1000))
     {
       ballHasCollected = true;
@@ -174,11 +178,10 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
 
   public void runPath(){
     //always move intake motors
-    intake.moveIntake(1);
     if(HaltAndRunBelt){
-      belt.moveBelt(0.5);
-      drive.stop();
-      HaltAndRunBelt = waitTime(startBeltTimer, 1500);
+        belt.moveBelt(0.5);
+        drive.driveFor(0.5, startBeltTimer, 1500);
+        HaltAndRunBelt = waitTime(startBeltTimer, 2000);
     }
     else{
       belt.stopBelt();
@@ -191,30 +194,30 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
         startTimer = false;
         ballHasCollected = false;
         HaltAndRunBelt = true;
+
         startWaitToContinue = System.currentTimeMillis();
         startBeltTimer = System.currentTimeMillis();
       }
 
-      waitAndContinue = waitTime(startWaitToContinue, 1000);
-
+      
       //if red path
       if(path == 1){
         //ball is not to the right
         if(ballsCollected == 1 && !doneRotation1){
           //rotate right
-            drive.rotate(0.5);
+            drive.rotate(1);
 
           //if there is a ball to the right
-          if(centerX1 != -1 && ballPosition > 200){
+          if(centerX1 != -1 && ballPosition > Constants.width/2 - 30){
             doneRotation1 = true;
           }
         }
 
         if(ballsCollected == 2 && !doneRotation2){
           //rotate left
-          drive.rotate(-0.5);
+          drive.rotate(-1);
           //if there is a ball to the left
-          if(centerX1 != -1 && ballPosition < -200){
+          if(centerX1 != -1 && ballPosition < -Constants.width/2 + 30){
             doneRotation2 = true;
           }
         }
@@ -226,20 +229,20 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
       else if(path == 0){
         if(ballsCollected == 1 && !doneRotation1){
           //rotate left
-            drive.rotate(-0.5);
+            drive.rotate(-1);
           
            //if there is a ball to the left
-           if(centerX1 != -1 && ballPosition < -200){
+           if(centerX1 != -1 && ballPosition < -Constants.width/2 + 30){
             doneRotation1 = true;
           }
         }
 
         if(ballsCollected == 2 && !doneRotation2){
           //rotate right
-            drive.rotate(0.5);
+            drive.rotate(1);
           
           //if there is a ball to the right
-          if(centerX1 != -1 && ballPosition > 200){
+          if(centerX1 != -1 && ballPosition > Constants.width/2 - 30){
             doneRotation2 = true;
           }
         }
@@ -258,7 +261,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
           startTime = System.currentTimeMillis();
           startTimer = true;
         }
-        doneWaiting = drive.stopForTime(startTime,3000);/**make a stop with time method */
+        doneWaiting = drive.stopForTime(startTime,1000);/**make a stop with time method */
       }
 
       //detected second ball
@@ -268,7 +271,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
           startTime = System.currentTimeMillis();
           startTimer = true;
         }
-        doneWaiting = drive.stopForTime(startTime,3000);
+        doneWaiting = drive.stopForTime(startTime,1000);
       }
 
       //detected 3rd ball
@@ -277,7 +280,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
           startTime = System.currentTimeMillis();
           startTimer = true;
         }
-        doneWaiting = drive.stopForTime(startTime,3000);
+        doneWaiting = drive.stopForTime(startTime,1000);
       }
 
        if(doneWaiting){
@@ -298,7 +301,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
           calculateCenterDisplacement();
 
           if(!inCenter){
-            drive.rotate((ballPosition * 2) / 600);
+            drive.rotate((ballPosition * 2) / Constants.width);
           }
 
           if(!doneWaiting){
@@ -306,7 +309,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
               startTime = System.currentTimeMillis();
               startTimer = true;
             }
-            doneWaiting = drive.stopForTime(startTime,3000);/**make a stop with time method */
+            doneWaiting = drive.stopForTime(startTime,1000);/**make a stop with time method */
           }
         }
       }
@@ -320,7 +323,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
         else{
           calculateCenterDisplacement();
           if(!inCenter){
-            drive.rotate((ballPosition * 2) / 600);
+            drive.rotate((ballPosition * 2) / Constants.width);
           }
         }
 
@@ -346,8 +349,8 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
 
   public void calculateCenterDisplacement(){
     if(gripTableGreen.getEntry("centerX").getDoubleArray(getValues).length >= 1){
-      ballPosition = gripTableGreen.getEntry("centerX").getDoubleArray(getValues)[0] - (600/2);
-      inCenter = ((ballPosition * 2) / 600 > -0.25f) && ((ballPosition * 2) / 600 < 0.25f); 
+      ballPosition = gripTableGreen.getEntry("centerX").getDoubleArray(getValues)[0] - (Constants.width/2);
+      inCenter = ((ballPosition * 2) / Constants.width > -0.25f) && ((ballPosition * 2) / Constants.width < 0.25f); 
     }
   }
 
@@ -358,6 +361,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
 
     if(centerX1 != -1 && centerX2 != -1){
       //ball 2 to the right of first ball
+
       if(centerX2 > centerX1){
         if(centerY2 < centerY1){
           return 1;
@@ -387,8 +391,9 @@ public void updatePath() {
   if(getPath() > -1 && count < 1000){
     pathValue += getPath();
     count++;
-    this.path = (int)Math.round(pathValue/count);
+    path = (int)Math.round(pathValue/count);
   }
+
 
   if(path == 1)
     {

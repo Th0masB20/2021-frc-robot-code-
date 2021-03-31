@@ -29,7 +29,6 @@ public class AutonomousCommand extends CommandBase {
   @Override
   public void execute() {
     vision.printStuff();
-    vision.update();
     vision.runPath();
   }
 
