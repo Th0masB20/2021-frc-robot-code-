@@ -5,9 +5,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.VictorSP;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -48,11 +46,13 @@ public class DriveSubsystem extends SubsystemBase {
       leftMotors.set(leftSpeed * 0.75);
   }
 
+
   //drive with just a speed 
   public void drive(double speed){
     rightMotors.set(-speed * 0.75);
     leftMotors.set(speed * 0.75);
   }
+
 
   //normal overall rotation
   public void rotate(double speed){
@@ -60,26 +60,30 @@ public class DriveSubsystem extends SubsystemBase {
     rightMotors.set(speed * 0.30);
   }
 
+
   public void stop(){
     rightMotors.set(0);
     leftMotors.set(0); 
   }
   
+  boolean timeWait = false;
   public boolean stopForTime(long start, int time){
-      if(waitTime(start, time)){
+    timeWait = waitTime(start, time);
+      if(timeWait){
         rightMotors.set(0);
         leftMotors.set(0); 
       }   
-      return !waitTime(start, time);
+      return !timeWait;
   }
+
 
   public boolean waitTime(long start, int timeMil){
     if(System.currentTimeMillis() - start < timeMil){
-      SmartDashboard.putNumber("Timer: ", System.currentTimeMillis() - start);
       return true;
     }
     return false;
   }
+
 
   public double getRMotorSpeed(){
     return rightMotors.get();

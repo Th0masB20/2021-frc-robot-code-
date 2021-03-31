@@ -4,30 +4,34 @@
 
 package frc.robot.subsystems;
 
-import org.opencv.core.Rect;
-import org.opencv.imgproc.Imgproc;
-
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionThread;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.vision.Vision;
 
 public class AutonomousVisionSubsystem extends SubsystemBase {
   /** Creates a new AutonomusVision. */
-  VisionThread thread;
+  Thread thread;
   NetworkTable gripTable;
+  NetworkTable gripTableGreen;
 
-  int centerX1, centerX2, centerX3;
-  int centerY1, centerY2;
+
+  int centerX1 = -1, centerX2 = -1, centerX3 = -1;
+  int centerY1 = -1, centerY2 = -1;
 
   //position relative to center of string
   double ballPosition;
   int path = -1;
+  //for updatePath();
+  double count = 0;
+  double pathValue = 0;
+
+  //for average ball length at the start
+  int ballLength;
+  int ballCount = 0;
 
   //array lengths
   int lengthX, lengthY, initialBallLength;
@@ -43,15 +47,28 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
   BeltSubsystem belt;
   IntakeMotorSubsystem intake;
 
-  boolean doRotation = false, hasDoneRotation = false;
   boolean inCenter =false;
+  boolean ballHasCollected;
 
   long startTime = 0l;
+  //for stoping time
   boolean doneWaiting = false;
+  boolean startTimer = false;
+  //for update wait
+  long startWaitUpdateTime = 0l;
 
-  //for updatePath();
-  double count = 0;
-  double pathValue = 0;
+  //so that the code doesn't get wrong data from latency 
+  long startWaitToContinue = 0l;
+  boolean waitAndContinue = false;
+
+  int ballsCollected = 0;
+  boolean done = false;
+  boolean complete = false;
+  boolean doneRotation1 = false, doneRotation2 = false;
+
+  boolean HaltAndRunBelt = false;
+  long startBeltTimer = 0l;
+  
 
   public AutonomousVisionSubsystem(UsbCamera camera, DriveSubsystem d, BeltSubsystem belt, IntakeMotorSubsystem intake) {
     gripTable = NetworkTableInstance.getDefault().getTable("GRIP/myContoursReport");
@@ -69,22 +86,21 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
   public void printStuff()
   {
       SmartDashboard.putBoolean("timer", doneWaiting);
-      SmartDashboard.putNumber("balls collected", ballsCollected);
       SmartDashboard.putBoolean("done", done);
 
-      SmartDashboard.putNumber("Path after enable", path);
+      SmartDashboard.putBoolean("Collected ball green", ballHasCollected);
       SmartDashboard.putNumber("left motor speed", drive.getLMotorSpeed());
       SmartDashboard.putNumber("right motor speed", drive.getRMotorSpeed());
-
-      SmartDashboard.putNumber("Number of balls", initialBallLength);
+      SmartDashboard.putNumber("collected balls", ballsCollected);
   }
   
   
   public void updateCenterXYPosition(){
-    /**-2 means absolutely empty, -1 means there was previously a value */
+    /**update ball values */
+
+    lengthX = gripTable.getEntry("centerX").getDoubleArray(getValues).length;
 
     //x values
-    lengthX = gripTable.getEntry("centerX").getDoubleArray(getValues).length;
     if(lengthX > 3){
       lengthX = 3;
     }
@@ -101,6 +117,12 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
     if(lengthX == 1){
       xPosition[2] = -1;
       xPosition[1] = -1;
+    }
+
+    if(lengthX == 0){
+      xPosition[2] = -1;
+      xPosition[1] = -1;
+      xPosition[0] = -1;
     }
     
     centerX1 = xPosition[0];
@@ -127,66 +149,208 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
       }
     }
 
+     /**then process them to get their position relative to the center */
+     if(gripTable.getEntry("centerX").getDoubleArray(getValues).length >= 1){
+      ballPosition = centerX1 - (600/2);
+      inCenter = ((ballPosition * 2) / 600 > -0.25f) && ((ballPosition * 2) / 600 < 0.25f);
+
+      if(!inCenter){
+        drive.rotate((ballPosition * 2) / 600);
+      }
+    }
+    else{  
+      inCenter = false;
+    }  
+
+    /**then check if a ball was collected */
+    if((int)gripTable.getEntry("centerY").getDoubleArray(getValues).length != 0 && (int)gripTable.getEntry("centerY").getDoubleArray(getValues)[0] >= 430 
+     && inCenter && !waitTime(startWaitUpdateTime, 1000))
+    {
+      ballHasCollected = true;
+      startWaitUpdateTime = System.currentTimeMillis();
+    }
   }
 
-  int stops = 0;
-  int ballsCollected = 0;
-  boolean done = false;
+
   public void runPath(){
-    if(ballsCollected == 3){
-      done = true;
-    }
+    //always move intake motors
     intake.moveIntake(1);
+    if(HaltAndRunBelt){
+      belt.moveBelt(0.5);
+      drive.stop();
+      HaltAndRunBelt = waitTime(startBeltTimer, 1500);
+    }
+    else{
+      belt.stopBelt();
+    }
 
-    if(gripTable.getEntry("centerX").getDoubleArray(getValues).length >= 1){
-        ballPosition = centerX1 - (600/2);
-        inCenter = ((ballPosition * 2) / 600 > -0.25f) && ((ballPosition * 2) / 600 < 0.25f);
-        if(!inCenter){
-          drive.rotate((ballPosition * 2) / 600);
+    if(!done && !HaltAndRunBelt){
+      if(ballHasCollected){
+        ballsCollected++;
+        doneWaiting = false;
+        startTimer = false;
+        ballHasCollected = false;
+        HaltAndRunBelt = true;
+        startWaitToContinue = System.currentTimeMillis();
+        startBeltTimer = System.currentTimeMillis();
+      }
+
+      waitAndContinue = waitTime(startWaitToContinue, 1000);
+
+      //if red path
+      if(path == 1){
+        //ball is not to the right
+        if(ballsCollected == 1 && !doneRotation1){
+          //rotate right
+            drive.rotate(0.5);
+
+          //if there is a ball to the right
+          if(centerX1 != -1 && ballPosition > 200){
+            doneRotation1 = true;
+          }
+        }
+
+        if(ballsCollected == 2 && !doneRotation2){
+          //rotate left
+          drive.rotate(-0.5);
+          //if there is a ball to the left
+          if(centerX1 != -1 && ballPosition < -200){
+            doneRotation2 = true;
+          }
+        }
+
+        if(ballsCollected == initialBallLength){
+          done = true;
+        }
+      }
+      else if(path == 0){
+        if(ballsCollected == 1 && !doneRotation1){
+          //rotate left
+            drive.rotate(-0.5);
+          
+           //if there is a ball to the left
+           if(centerX1 != -1 && ballPosition < -200){
+            doneRotation1 = true;
+          }
+        }
+
+        if(ballsCollected == 2 && !doneRotation2){
+          //rotate right
+            drive.rotate(0.5);
+          
+          //if there is a ball to the right
+          if(centerX1 != -1 && ballPosition > 200){
+            doneRotation2 = true;
+          }
+        }
+
+        if(ballsCollected == initialBallLength){
+          done = true;
+        }
+      }
+      
+
+    if(inCenter) {    
+      //detected first ball
+      if(ballsCollected == 0 && !doneWaiting && !waitAndContinue){
+        SmartDashboard.putNumber("First Timer: ", System.currentTimeMillis() - startTime);
+        if(!startTimer){
           startTime = System.currentTimeMillis();
+          startTimer = true;
         }
+        doneWaiting = drive.stopForTime(startTime,3000);/**make a stop with time method */
+      }
 
-
-      if(inCenter) {
-        //detectedd first ball
-        if(ballsCollected == 0 && !doneWaiting){
-          doneWaiting = drive.stopForTime(startTime,3000);/**make a stop with time method */
+      //detected second ball
+      if(ballsCollected == 1 && !doneWaiting && !waitAndContinue && doneRotation1){
+        SmartDashboard.putNumber("Second Timer: ", System.currentTimeMillis() - startTime);
+        if(!startTimer){
+          startTime = System.currentTimeMillis();
+          startTimer = true;
         }
+        doneWaiting = drive.stopForTime(startTime,3000);
+      }
 
-        //detected second ball
-        if(ballsCollected == 1 && !doneWaiting){
-          doneWaiting = drive.stopForTime(startTime,3000);
+      //detected 3rd ball
+      if(ballsCollected == 2 && !doneWaiting && !waitAndContinue && doneRotation2){
+        if(!startTimer){
+          startTime = System.currentTimeMillis();
+          startTimer = true;
         }
+        doneWaiting = drive.stopForTime(startTime,3000);
+      }
 
-        //detected 3rd ball
-        if(ballsCollected == 2 && !doneWaiting){
-          doneWaiting = drive.stopForTime(startTime,3000);
+       if(doneWaiting){
+         //drive forward
+          drive.drive(0.5);
         }
-
-        if(doneWaiting){
-          drive.drive(-0.5);
-        }
-
       }
     }
 
-      
-      if(doRotation && !hasDoneRotation){
-        if(lengthX >= 1){
-          doRotation = false;
-          hasDoneRotation = true;
+    if(done && !HaltAndRunBelt){
+      if(path == 1){
+        //ball is not to the right
+        if(gripTableGreen.getEntry("centerX").getDoubleArray(getValues).length == 0){
+          //rotate right
+          drive.rotate(0.5);
         }
-        if(path == 1){
-          //rotate left
-          drive.rotate(0.5f);
+        else{
+          calculateCenterDisplacement();
+
+          if(!inCenter){
+            drive.rotate((ballPosition * 2) / 600);
           }
 
-        if(path == 0){
-          //rotate right
-          drive.rotate(-0.5f);
+          if(!doneWaiting){
+            if(!startTimer){
+              startTime = System.currentTimeMillis();
+              startTimer = true;
+            }
+            doneWaiting = drive.stopForTime(startTime,3000);/**make a stop with time method */
           }
         }
+      }
+
+      if(path == 0){
+        //ball is not to the right
+         if(gripTableGreen.getEntry("centerX").getDoubleArray(getValues).length == 0){
+          //rotate left
+          drive.rotate(-0.5);
+        }
+        else{
+          calculateCenterDisplacement();
+          if(!inCenter){
+            drive.rotate((ballPosition * 2) / 600);
+          }
+        }
+
+        if(!doneWaiting){
+            if(!startTimer){
+              startTime = System.currentTimeMillis();
+              startTimer = true;
+            }
+            doneWaiting = drive.stopForTime(startTime,3000);/**make a stop with time method */
+          }
+      }
+
+      if(doneWaiting){
+        drive.drive(0.5);
+        if(gripTableGreen.getEntry("centerX").getDoubleArray(getValues).length == 0){
+          complete = true;
+        }
+      }
     }
+
+
+  }
+
+  public void calculateCenterDisplacement(){
+    if(gripTableGreen.getEntry("centerX").getDoubleArray(getValues).length >= 1){
+      ballPosition = gripTableGreen.getEntry("centerX").getDoubleArray(getValues)[0] - (600/2);
+      inCenter = ((ballPosition * 2) / 600 > -0.25f) && ((ballPosition * 2) / 600 < 0.25f); 
+    }
+  }
+
 
 
   //generates path based on second ball's position
@@ -213,9 +377,14 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
 //in disable periodic
 public void updatePath() {
 
-  initialBallLength = gripTable.getEntry("centerX").getDoubleArray(getValues).length;
+  if(gripTable.getEntry("centerX").getDoubleArray(getValues).length > 0 && ballCount < 1000){
+    ballLength += gripTable.getEntry("centerX").getDoubleArray(getValues).length;
+    ballCount++;
+    initialBallLength = (int)Math.round(ballLength/ballCount);
+  } 
 
-  if(getPath() > -1 && count < 500){
+
+  if(getPath() > -1 && count < 1000){
     pathValue += getPath();
     count++;
     this.path = (int)Math.round(pathValue/count);
@@ -231,10 +400,12 @@ public void updatePath() {
     else{
       SmartDashboard.putString("Path", "none");
     }
+
+    SmartDashboard.putNumber("Number of balls", initialBallLength);
   }
 
   public boolean waitTime(long start, int timeMil){
-    if(System.currentTimeMillis() - start > timeMil){
+    if(System.currentTimeMillis() - start < timeMil){
       return true;
     }
     return false;
@@ -243,50 +414,12 @@ public void updatePath() {
 
   public void update(){
     updateCenterXYPosition();
-
-    if(!done){
-      //if collected 1 ball
-    if(lengthX == 2 && ballsCollected == 0){
-      ballsCollected = 1;
-      doneWaiting = false;
-    }
-
-    if(lengthX == 1 && ballsCollected == 1 && initialBallLength == 3){
-      if(path == 1){
-        drive.rotate(-0.5);
-      }   
-      if(path == -1){
-        drive.rotate(0.5);
-      }      
-    }
-    //if collected 2'nd ball but not detecting 3rd
-    if(lengthX == 0 && initialBallLength == 3 && ballsCollected == 1 && !hasDoneRotation){
-      ballsCollected = 2;
-      doneWaiting = false;
-      doRotation = true;
-    }//if collected 2nd ball and finished
-    else if (lengthX == 0 && initialBallLength == 2 && ballsCollected == 1){
-      ballsCollected = 2;
-      doneWaiting = false;
-    }
-
-    //gets last ball and finishes 
-    if(lengthX == 0 && ballsCollected == 2 ){
-      ballsCollected = 3;
-      doneWaiting = false;
-    }
-    }
-
-    if(ballsCollected == initialBallLength){
-      done = true;
-    }
-
-    if(lengthX == 0 && ballsCollected == initialBallLength){
-
-    }
   }
 
- 
+  public  boolean isComplete() {
+    return complete;
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
