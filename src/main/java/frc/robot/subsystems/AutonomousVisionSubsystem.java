@@ -7,11 +7,9 @@ package frc.robot.subsystems;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.vision.VisionThread;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.vision.Vision;
 
 public class AutonomousVisionSubsystem extends SubsystemBase {
   /** Creates a new AutonomusVision. */
@@ -78,22 +76,12 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
     drive = d;
     this.belt = belt;
     this.intake = intake;
-
-    thread = new VisionThread(camera, new Vision(), pipeline -> {
-      update();
-    });
-
-    thread.start();
   }
   
   public void printStuff()
   {
       SmartDashboard.putBoolean("timer", doneWaiting);
       SmartDashboard.putBoolean("done", done);
-
-      SmartDashboard.putBoolean("Collected ball green", ballHasCollected);
-      SmartDashboard.putNumber("left motor speed", drive.getLMotorSpeed());
-      SmartDashboard.putNumber("right motor speed", drive.getRMotorSpeed());
       SmartDashboard.putNumber("collected balls", ballsCollected);
   }
   
@@ -156,7 +144,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
      /**then process them to get their position relative to the center */
      if(gripTable.getEntry("centerX").getDoubleArray(getValues).length >= 1){
       ballPosition = centerX1 - (Constants.width/2);
-      inCenter = ((ballPosition * 2) / Constants.width > -Constants.rotationDeadZOne) && ((ballPosition * 2) / Constants.width < Constants.rotationDeadZOne);
+      inCenter = ((ballPosition * 2) / Constants.width > -Constants.rotationDeadZone) && ((ballPosition * 2) / Constants.width < Constants.rotationDeadZone);
 
       if(!inCenter){
         drive.rotate((ballPosition * 2) / Constants.width);
@@ -179,8 +167,8 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
   public void runPath(){
     //always move intake motors
     if(HaltAndRunBelt){
-        belt.moveBelt(0.5);
-        drive.driveFor(0.5, startBeltTimer, 1500);
+        belt.moveBelt(0.6);
+        drive.driveFor(0.6, startBeltTimer, 1500);
         HaltAndRunBelt = waitTime(startBeltTimer, 2000);
     }
     else{
@@ -208,7 +196,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
             drive.rotate(1);
 
           //if there is a ball to the right
-          if(centerX1 != -1 && ballPosition > Constants.width/2 - 30){
+          if(centerX1 != -1 && ballPosition > Constants.width/2 - 40){
             doneRotation1 = true;
           }
         }
@@ -217,7 +205,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
           //rotate left
           drive.rotate(-1);
           //if there is a ball to the left
-          if(centerX1 != -1 && ballPosition < -Constants.width/2 + 30){
+          if(centerX1 != -1 && ballPosition < -Constants.width/2 + 40){
             doneRotation2 = true;
           }
         }
@@ -232,7 +220,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
             drive.rotate(-1);
           
            //if there is a ball to the left
-           if(centerX1 != -1 && ballPosition < -Constants.width/2 + 30){
+           if(centerX1 != -1 && ballPosition < -Constants.width/2 + 40){
             doneRotation1 = true;
           }
         }
@@ -242,7 +230,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
             drive.rotate(1);
           
           //if there is a ball to the right
-          if(centerX1 != -1 && ballPosition > Constants.width/2 - 30){
+          if(centerX1 != -1 && ballPosition > Constants.width/2 - 40){
             doneRotation2 = true;
           }
         }
@@ -290,6 +278,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
       }
     }
 
+    //if done 
     if(done && !HaltAndRunBelt){
       if(path == 1){
         //ball is not to the right
@@ -332,7 +321,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
               startTime = System.currentTimeMillis();
               startTimer = true;
             }
-            doneWaiting = drive.stopForTime(startTime,3000);/**make a stop with time method */
+            doneWaiting = drive.stopForTime(startTime,1000);/**make a stop with time method */
           }
       }
 
@@ -350,7 +339,7 @@ public class AutonomousVisionSubsystem extends SubsystemBase {
   public void calculateCenterDisplacement(){
     if(gripTableGreen.getEntry("centerX").getDoubleArray(getValues).length >= 1){
       ballPosition = gripTableGreen.getEntry("centerX").getDoubleArray(getValues)[0] - (Constants.width/2);
-      inCenter = ((ballPosition * 2) / Constants.width > -0.25f) && ((ballPosition * 2) / Constants.width < 0.25f); 
+      inCenter = ((ballPosition * 2) / Constants.width > -Constants.rotationDeadZone) && ((ballPosition * 2) / Constants.width < Constants.rotationDeadZone); 
     }
   }
 

@@ -56,8 +56,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   //normal overall rotation
   public void rotate(double speed){
-      leftMotors.set(speed * 0.2);
-      rightMotors.set(speed * 0.2);
+    //used to be 0.2
+      leftMotors.set(speed * 0.197);
+      rightMotors.set(speed * 0.197);
   }
 
 
